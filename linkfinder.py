@@ -245,27 +245,22 @@ def html_save(html):
     '''
     Save as HTML file and open in the browser
     '''
-    hide = os.dup(1)
-    os.close(1)
-    os.open(os.devnull, os.O_RDWR)
     try:
-        s = Template(open('%s/template.html' % sys.path[0], 'r').read())
+        s = Template(open(os.path.join(sys.path[0], 'template.html'), 'r').read())
 
-        text_file = open(args.output, "wb")
-        text_file.write(s.substitute(content=html).encode('utf8'))
-        text_file.close()
+        with open(args.output, "wb") as text_file:
+            text_file.write(s.substitute(content=html).encode('utf8'))
 
-        print("URL to access output: file://%s" % os.path.abspath(args.output))
-        file = "file:///%s" % os.path.abspath(args.output)
+        output_path = os.path.abspath(args.output)
+        print("URL to access output: file:///%s" % output_path.replace("\\", "/"))
+
         if sys.platform == 'linux' or sys.platform == 'linux2':
-            subprocess.call(["xdg-open", file])
+            subprocess.call(["xdg-open", output_path])
         else:
-            webbrowser.open(file)
+            webbrowser.open("file:///" + output_path.replace("\\", "/"))
+
     except Exception as e:
-        print("Output can't be saved in %s \
-            due to exception: %s" % (args.output, e))
-    finally:
-        os.dup2(hide, 1)
+        print("Output can't be saved in %s due to exception: %s" % (args.output, e))
 
 def check_url(url):
     nopelist = ["node_modules", "jquery.js"]
